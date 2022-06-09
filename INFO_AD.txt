@@ -1,0 +1,3 @@
+This project based on Amigoscode video: https://www.youtube.com/watch?v=9SGDpanrc8U
+
+IDE: IntelliJ IDEA Community Edition
