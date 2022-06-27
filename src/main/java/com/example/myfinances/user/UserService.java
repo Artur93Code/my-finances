@@ -23,17 +23,6 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    /*public List<User> getUsers()
-    {
-        return List.of(new User(
-            1L,
-            "Kazik",
-            "111",
-            "kazik@wp.pl",
-             LocalDate.of(1999, JANUARY, 6)
-        ));
-    }*/
-
     public Long getNumberOfUsers()
     {
         return userRepository.count();
@@ -65,9 +54,9 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalStateException("Użytkownik o id: "+userId+" nie istnieje"));
 
-        if (name != null && name.length() > 0 && !Objects.equals(user.getName(), name))
+        if (name != null && name.length() > 0 && !Objects.equals(user.getUsername(), name))
         {
-            user.setName(name);
+            user.setUsername(name);
         }
 
         if(email != null && email.length() > 0 && !Objects.equals(user.getEmail(), email))

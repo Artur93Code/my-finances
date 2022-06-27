@@ -3,10 +3,14 @@ package com.example.myfinances.user;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.Period;
+import java.util.Collection;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
 @Table
-public class User {
+public class User implements UserDetails {
     @Id
     @SequenceGenerator(
             name = "user_sequence",
@@ -18,7 +22,7 @@ public class User {
             generator = "user_sequence"
     )
     private Long id;
-    private String name;
+    private String username;
     private String password;
     private String email;
     private LocalDate dob; //date of birth
@@ -26,19 +30,22 @@ public class User {
     @Transient
     private Integer age;
 
+    @Column(name = "account_non_locked")
+    private boolean accountNonLocked;
+
     //default constructor
     public User(){}
 
-    public User(Long id, String name, String password, String email, LocalDate dob) {
+    public User(Long id, String username, String password, String email, LocalDate dob) {
         this.id = id;
-        this.name = name;
+        this.username = username;
         this.password = password;
         this.email = email;
         this.dob = dob;
     }
 
-    public User(String name, String password, String email, LocalDate dob) {
-        this.name = name;
+    public User(String username, String password, String email, LocalDate dob) {
+        this.username = username;
         this.password = password;
         this.email = email;
         this.dob = dob;
@@ -52,12 +59,12 @@ public class User {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getUsername() {
+        return username;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getPassword() {
@@ -91,10 +98,38 @@ public class User {
     }
 
     @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return null;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+    @Override public boolean isCredentialsNonExpired() {
+        return true;
+    }
+    @Override public boolean isEnabled() {
+        return true;
+    }
+
+    public void setAccountNonLocked(Boolean accountNonLocked) {
+        this.accountNonLocked = accountNonLocked;
+    }
+    public boolean getAccountNonLocked() {
+        return accountNonLocked;
+    }
+
+    @Override
     public String toString() {
         return "User{" +
                 "id=" + id +
-                ", name='" + name + '\'' +
+                ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
                 ", email='" + email + '\'' +
                 ", dob=" + dob +
