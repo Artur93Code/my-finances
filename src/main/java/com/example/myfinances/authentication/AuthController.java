@@ -1,10 +1,16 @@
 package com.example.myfinances.authentication;
 
+import com.example.myfinances.role.Role;
+import com.example.myfinances.role.RoleRepository;
 import com.example.myfinances.user.User;
+import com.example.myfinances.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,8 +20,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.util.Enumeration;
-import java.util.Map;
+import java.time.LocalDate;
+import java.util.*;
 
 @Controller
 public class AuthController {
@@ -23,6 +29,17 @@ public class AuthController {
     @Autowired private SecurityUserDetailsService userDetailsManager;
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    Role role = new Role();
+    private RoleRepository roleRepository;
+
+    @Autowired
+    public AuthController(RoleRepository roleRepository) {
+        this.roleRepository = roleRepository;
+    }
+
+    public AuthController() {
+    }
 
     @GetMapping("/login")
     public String login(HttpServletRequest request, HttpSession session) {
@@ -49,7 +66,13 @@ public class AuthController {
         User user = new User();
         user.setUsername(body.get("username"));
         user.setPassword(passwordEncoder.encode(body.get("password")));
+        user.setEmail(body.get("email"));
+        user.setDob(LocalDate.parse(body.get("dob")));
         user.setAccountNonLocked(true);
+
+        List<Role> optionalRole = roleRepository.findRoleByName("User").stream().toList();
+        user.setRoles(optionalRole);
+        //user.getAuthorities().add(optionalRole);
         userDetailsManager.createUser(user);
     }
 

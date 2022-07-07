@@ -3,9 +3,11 @@ package com.example.myfinances.user;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.Collection;
+import java.util.*;
 
+import com.example.myfinances.role.Role;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
@@ -33,6 +35,14 @@ public class User implements UserDetails {
     @Column(name = "account_non_locked")
     private boolean accountNonLocked;
 
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "user_role",
+            joinColumns = @JoinColumn(name = "user_id", referencedColumnName="id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName="id")
+    )
+    private List<Role> roles; //= new ArrayList<>();
+
     //default constructor
     public User(){}
 
@@ -49,6 +59,15 @@ public class User implements UserDetails {
         this.password = password;
         this.email = email;
         this.dob = dob;
+    }
+
+    public User(String username, String password, String email, LocalDate dob, boolean accountNonLocked, List<Role> roles) {
+        this.username = username;
+        this.password = password;
+        this.email = email;
+        this.dob = dob;
+        this.accountNonLocked = accountNonLocked;
+        this.roles = roles;
     }
 
     public Long getId() {
@@ -98,8 +117,15 @@ public class User implements UserDetails {
     }
 
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+    public Collection<? extends GrantedAuthority> getAuthorities()
+    {
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+
+        for (Role role : this.roles) {
+            authorities.add(new SimpleGrantedAuthority(role.getName()));
+        }
+
+        return authorities;
     }
 
     @Override
@@ -134,5 +160,9 @@ public class User implements UserDetails {
                 ", email='" + email + '\'' +
                 ", dob=" + dob +
                 '}';
+    }
+
+    public void setRoles(List<Role> roles) {
+        this.roles = roles;
     }
 }

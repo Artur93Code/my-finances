@@ -1,5 +1,7 @@
 package com.example.myfinances.authentication;
 
+import com.example.myfinances.role.Role;
+import com.example.myfinances.role.RoleRepository;
 import com.example.myfinances.user.User;
 import com.example.myfinances.authentication.SecurityUserDetailsService;
 import com.example.myfinances.user.UserRepository;
@@ -11,11 +13,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,25 +35,27 @@ import java.util.Optional;
                 String username = authentication.getName();
                 String password = authentication.getCredentials().toString();
 
-                /*SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_ANOTHER");
-                List<SimpleGrantedAuthority> updatedAuthorities = new ArrayList<SimpleGrantedAuthority>();
-                updatedAuthorities.add(authority);*/
+                Optional<Attempts> userAttempts = attemptsRepository.findAttemptsByUsername(username);
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                userDetails.getPassword();
+                //if(passwordEncoder.matches(password,userRepository.findUserByUsername(username).get().getPassword())/*set loadByUsername form SecurityUserDet...*/) {
+                if(passwordEncoder.matches(password,userDetails.getPassword()) && userDetails.isAccountNonLocked()){
 
-                Optional<Attempts>
-                        userAttempts = attemptsRepository.findAttemptsByUsername(username);
+                    if (userAttempts.isPresent()) {
+                        Attempts attempts = userAttempts.get();
+                        attempts.setAttempts(0);
+                        attemptsRepository.save(attempts);
+                    }
 
-                if (userAttempts.isPresent()) {
-                    Attempts attempts = userAttempts.get();
-                    attempts.setAttempts(0); attemptsRepository.save(attempts);
-                }
-                if(userRepository.findUserByUsername(username).isPresent()/*set loadByUsername form SecurityUserDet...*/) {
-
+                    Optional<User>user = userRepository.findUserByUsername(username);
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             authentication.getPrincipal(),
                             authentication.getCredentials(),
-                            /*new ArrayList<GrantedAuthority>()*/null);
+                            user.get().getAuthorities())
+                            /*new ArrayList<GrantedAuthority>()*//*null*/;
                     return authToken;
                 }
+                else processFailedAttempts(username,userRepository.findUserByUsername(username).get());
                 return null;
             }
             private void processFailedAttempts(String username, User user) {
