@@ -1,5 +1,8 @@
 package com.example.myfinances.authentication;
 
+import com.example.myfinances.finance.Finance;
+import com.example.myfinances.finance.FinanceController;
+import com.example.myfinances.finance.FinanceService;
 import com.example.myfinances.role.Role;
 import com.example.myfinances.role.RoleRepository;
 import com.example.myfinances.user.User;
@@ -8,15 +11,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -32,6 +35,9 @@ public class AuthController {
 
     Role role = new Role();
     private RoleRepository roleRepository;
+
+    @Autowired
+    private FinanceService financeService;
 
     @Autowired
     public AuthController(RoleRepository roleRepository) {
@@ -71,15 +77,19 @@ public class AuthController {
         user.setAccountNonLocked(true);
 
         List<Role> optionalRole = roleRepository.findRoleByName("User").stream().toList();
-        user.setRoles(optionalRole);
+        user.setAuthorities(optionalRole);
         //user.getAuthorities().add(optionalRole);
         userDetailsManager.createUser(user);
     }
 
-    @GetMapping("/index")
-    public String index() {
+    @GetMapping("/")
+    public String defaultPage() {
         return "index";
     }
+/*    @GetMapping("/index")
+    public String index() {
+        return "index";
+    }*/
 
     private String getErrorMessage(HttpServletRequest request, String key) {
         Exception exception = (Exception) request.getSession().getAttribute(key);

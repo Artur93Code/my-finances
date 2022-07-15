@@ -52,7 +52,7 @@ public class UserService {
     public void updateUser(Long userId, String name, String email)
     {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalStateException("Użytkownik o id: "+userId+" nie istnieje"));
+                .orElseThrow(() -> new IllegalStateException("User with id: "+userId+" not exist"));
 
         if (name != null && name.length() > 0 && !Objects.equals(user.getUsername(), name))
         {
@@ -64,7 +64,7 @@ public class UserService {
             Optional<User> userOptional = userRepository.findUserByEmail(email);
             if (userOptional.isPresent())
             {
-                throw new IllegalStateException("Podany adres email jest już zajęty");
+                throw new IllegalStateException("This email address is already taken");
             }
             user.setEmail(email);
         }

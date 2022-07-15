@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.*;
 
+import com.example.myfinances.finance.Finance;
+import com.example.myfinances.finance.FinanceService;
 import com.example.myfinances.role.Role;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -30,6 +32,9 @@ public class User implements UserDetails {
     private LocalDate dob; //date of birth
 
     @Transient
+    private Float saldo;
+
+    @Transient
     private Integer age;
 
     @Column(name = "account_non_locked")
@@ -42,6 +47,14 @@ public class User implements UserDetails {
             inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName="id")
     )
     private List<Role> roles; //= new ArrayList<>();
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)//cascade = CascadeType.ALL, orphanRemoval = true - when user entity (parent) is delete joined finance entities (child) is delete too
+    @JoinTable(
+            name = "user_finance",
+            joinColumns = @JoinColumn(name = "user_id", referencedColumnName="id"),
+            inverseJoinColumns = @JoinColumn(name = "finance_id", referencedColumnName="id")
+    )
+    private List<Finance> finances;
 
     //default constructor
     public User(){}
@@ -116,6 +129,32 @@ public class User implements UserDetails {
         this.age = age;
     }
 
+    public Float getSaldo() {
+        saldo = 0F;
+        for (Finance transaction : getFinances())
+        {
+            if(transaction.getType().equals("income"))
+                saldo = saldo+transaction.getAmount();
+            else
+            {
+                saldo=saldo-transaction.getAmount();
+            }
+        }
+        return saldo;
+    }
+
+    public void setSaldo(Float saldo) {
+        this.saldo = saldo;
+    }
+
+    public List<Finance> getFinances() {
+        return finances;
+    }
+
+    public void setFinances(List<Finance> finances) {
+        this.finances = finances;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities()
     {
@@ -162,7 +201,7 @@ public class User implements UserDetails {
                 '}';
     }
 
-    public void setRoles(List<Role> roles) {
+    public void setAuthorities(List<Role> roles) {
         this.roles = roles;
     }
 }
