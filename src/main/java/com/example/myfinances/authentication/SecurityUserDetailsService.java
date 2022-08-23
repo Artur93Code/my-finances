@@ -18,7 +18,7 @@ public class SecurityUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username)
             throws UsernameNotFoundException {
         User user = userRepository.findUserByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Użytkownik nie istnieje"));
+                .orElseThrow(() -> new UsernameNotFoundException("User not exist"));
         return user;
     }
     public void createUser(UserDetails user) {

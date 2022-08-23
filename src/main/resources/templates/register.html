@@ -33,7 +33,9 @@
 <form action="/register" method="post">
     <h2 class="fw-bold mb-2 text-uppercase">Register</h2>
     <p class="text-50 mb-4">Please fill in this form to create an account.</p>
-
+    <div th:if="${session.registerError}">
+        <p th:text="${session.registerError}" th:unless="${session == null}">[...]</p>
+    </div>
         <div class="form-outline mb-4 w-25">
         <input type="text" placeholder="Enter Username" name="username" id="username" required>
         </div>

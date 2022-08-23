@@ -11,6 +11,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.SecurityFilterChain;
 /*import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;*/
 
@@ -20,8 +21,9 @@ import java.util.List;
 
 import static java.time.Month.*;
 
+//WebSecurityConfigurerAdapter is deprecated
 @Configuration
-public class UserConfig extends WebSecurityConfigurerAdapter {
+public class UserConfig extends WebSecurityConfigurerAdapter{
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -45,6 +47,8 @@ public class UserConfig extends WebSecurityConfigurerAdapter {
                 .logout().invalidateHttpSession(true)
                 .clearAuthentication(true).permitAll();
     }
+
+
 
 
     private RoleRepository roleRepository;

@@ -8,6 +8,7 @@ import com.example.myfinances.role.RoleRepository;
 import com.example.myfinances.user.User;
 import com.example.myfinances.user.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
@@ -20,11 +21,17 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Controller
 public class AuthController {
@@ -68,18 +75,27 @@ public class AuthController {
             consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = {
             MediaType.APPLICATION_ATOM_XML_VALUE, MediaType.APPLICATION_JSON_VALUE }
     )
-    public void addUser(@RequestParam Map<String, String> body) {
-        User user = new User();
-        user.setUsername(body.get("username"));
-        user.setPassword(passwordEncoder.encode(body.get("password")));
-        user.setEmail(body.get("email"));
-        user.setDob(LocalDate.parse(body.get("dob")));
-        user.setAccountNonLocked(true);
+    public String addUser(@RequestParam Map<String, String> body, HttpSession session, HttpServletRequest request) {
+        try {
+            User user = new User();
+            user.setUsername(body.get("username"));
+            user.setPassword(passwordEncoder.encode(body.get("password")));
+            user.setEmail(body.get("email"));
+            user.setDob(LocalDate.parse(body.get("dob")));
+            user.setAccountNonLocked(true);
 
-        List<Role> optionalRole = roleRepository.findRoleByName("User").stream().toList();
-        user.setAuthorities(optionalRole);
-        //user.getAuthorities().add(optionalRole);
-        userDetailsManager.createUser(user);
+            List<Role> optionalRole = roleRepository.findRoleByName("User").stream().toList();
+            user.setAuthorities(optionalRole);
+            //user.getAuthorities().add(optionalRole);
+            userDetailsManager.createUser(user);
+            session.setAttribute("registerSuccess", "Registration Success!");
+            return "login";
+        }
+        catch (Exception exception)
+        {
+            session.setAttribute("registerError", "Something went wrong");
+            return "register";
+        }
     }
 
     @GetMapping("/")

@@ -26,6 +26,7 @@ public class User implements UserDetails {
             generator = "user_sequence"
     )
     private Long id;
+    @Column(unique = true)
     private String username;
     private String password;
     private String email;
